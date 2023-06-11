@@ -2,10 +2,11 @@
   "name": "image_process_api",
   "version": "1.0.0",
   "description": "",
-  "main": "src/app.js",
+  "main": "./src/app.js",
   "scripts": {
+    "dev": "nodemon ./src/app.js",
     "build": "npx tsc",
-    "start": "nodemon -q src/app.js",
+    "start": "nodemon -q ./src/app.js",
     "prettify": "prettier --write .",
     "test": "jasmine",
     "eslint": "npx eslint src --fix"

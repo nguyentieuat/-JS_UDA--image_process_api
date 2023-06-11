@@ -1,22 +1,17 @@
 import { promises as fs } from "fs";
 import path from "path";
-import processImage from "./image_process";
+import FileUtils from "../utils/fileUtils";
+import { Params } from "../utils/parametersInterface";
 
-// query segments
-interface Params {
-  filename?: string;
-  width?: string;
-  height?: string;
-}
-export default class File {
+export default class ImageService {
   // Default paths
-  static imagesFullPath = path.resolve(
+  private static imagesFullPath = path.resolve(
     __dirname,
-    "../../../assets/images/full"
+    "../../../public/assets/images/full"
   );
-  static imagesThumbPath = path.resolve(
+  private static imagesThumbPath = path.resolve(
     __dirname,
-    "../../../assets/images/thumb"
+    "../../../public/assets/images/thumb"
   );
 
   /**
@@ -25,7 +20,7 @@ export default class File {
    */
   static async getAvailableImages(): Promise<string[]> {
     try {
-      return (await fs.readdir(File.imagesFullPath)).map(
+      return (await fs.readdir(this.imagesFullPath)).map(
         (filename: string): string => filename.split(".")[0]
       );
     } catch {
@@ -39,7 +34,7 @@ export default class File {
    */
   static async getAvailableImagesThumb(): Promise<string[]> {
     try {
-      return (await fs.readdir(File.imagesThumbPath)).map(
+      return (await fs.readdir(this.imagesThumbPath)).map(
         (filename: string): string => filename.split(".")[0]
       );
     } catch {
@@ -48,7 +43,7 @@ export default class File {
   }
 
   /**
-   * Check name image existed
+   * Check name image existed`
    * @param filename
    * @returns
    */
@@ -56,7 +51,7 @@ export default class File {
     if (!filename) {
       return false; // Fail early
     }
-    return (await File.getAvailableImages()).includes(filename);
+    return (await this.getAvailableImages()).includes(filename);
   }
 
   /**
@@ -68,7 +63,7 @@ export default class File {
     if (!filename) {
       return false; // Fail early
     }
-    return (await File.getAvailableImagesThumb()).includes(filename);
+    return (await this.getAvailableImagesThumb()).includes(filename);
   }
   /**
    * Get image
@@ -76,32 +71,33 @@ export default class File {
    * @returns
    */
   static async getImage(params: Params): Promise<null | string> {
+    console.log(params)
     if (!params.filename) {
       return null;
     }
 
     if (params.filename && params.width && params.height) {
       if (
-        !(await File.isImageThumbAvailable(
+        !(await this.isImageThumbAvailable(
           `${params.filename}-${params.width}x${params.height}`
         ))
       ) {
-        await File.createImageThumb(params);
+        await this.createImageThumb(params);
       }
     }
 
-    const filePath: string =
+    const thisPath: string =
       params.width && params.height
         ? path.resolve(
-            File.imagesThumbPath,
+            this.imagesThumbPath,
             `${params.filename}-${params.width}x${params.height}.jpg`
           )
-        : path.resolve(File.imagesFullPath, `${params.filename}.jpg`);
+        : path.resolve(this.imagesFullPath, `${params.filename}.jpg`);
 
-    // Check file existed
+    // Check this existed
     try {
-      await fs.access(filePath);
-      return filePath;
+      await fs.access(thisPath);
+      return thisPath;
     } catch {
       return null;
     }
@@ -112,10 +108,10 @@ export default class File {
    */
   static async createThumbFolder(): Promise<void> {
     try {
-      await fs.access(File.imagesThumbPath);
+      await fs.access(this.imagesThumbPath);
       // Path already available
     } catch {
-      fs.mkdir(File.imagesThumbPath);
+      fs.mkdir(this.imagesThumbPath);
     }
   }
 
@@ -142,19 +138,19 @@ export default class File {
     }
 
     // Make sure that thumb path is available
-    await File.createThumbFolder();
+    await this.createThumbFolder();
 
     const filePathImageFull: string = path.resolve(
-      File.imagesFullPath,
+      this.imagesFullPath,
       `${params.filename}.jpg`
     );
     const filePathImageThumb: string = path.resolve(
-      File.imagesThumbPath,
+      this.imagesThumbPath,
       `${params.filename}-${params.width}x${params.height}.jpg`
     );
     console.log(`Creating thumb ${filePathImageThumb}`);
     // Resize original image and store as thumb
-    return await processImage({
+    return await FileUtils.processImage({
       source: filePathImageFull,
       target: filePathImageThumb,
       width: parseInt(params.width),

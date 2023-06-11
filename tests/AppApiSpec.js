@@ -1,9 +1,9 @@
 var Request = require("request");
 
-describe("App", () => {
+describe("App api", () => {
   var server;
   beforeAll(() => {
-    server = require("../app");
+    server = require("../src/app");
   });
 
   describe("GET home", () => {
