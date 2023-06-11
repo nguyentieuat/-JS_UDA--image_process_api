@@ -86,7 +86,7 @@ export default class ImageService {
       }
     }
 
-    const thisPath: string =
+    const filePath: string =
       params.width && params.height
         ? path.resolve(
             this.imagesThumbPath,
@@ -94,10 +94,10 @@ export default class ImageService {
           )
         : path.resolve(this.imagesFullPath, `${params.filename}.jpg`);
 
-    // Check this existed
+    // Check file existed
     try {
-      await fs.access(thisPath);
-      return thisPath;
+      await fs.access(filePath);
+      return filePath;
     } catch {
       return null;
     }
